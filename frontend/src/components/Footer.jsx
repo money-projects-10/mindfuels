@@ -122,9 +122,9 @@ export default function Footer({ navigate }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <span style={{ opacity: 0.5 }}>Secured by Razorpay</span>
             <div style={{ display: 'flex', gap: '6px' }}>
-              <span className="badge" style={{ background: 'rgba(255,255,255,0.06)', color: '#fff', fontSize: '0.65rem' }}>UPI</span>
-              <span className="badge" style={{ background: 'rgba(255,255,255,0.06)', color: '#fff', fontSize: '0.65rem' }}>Cards</span>
-              <span className="badge" style={{ background: 'rgba(255,255,255,0.06)', color: '#fff', fontSize: '0.65rem' }}>Netbanking</span>
+              <span className="badge" style={{ background: 'rgba(255,255,255,0.06)', color: '#fff', fontSize: '0.75rem' }}>UPI</span>
+              <span className="badge" style={{ background: 'rgba(255,255,255,0.06)', color: '#fff', fontSize: '0.75rem' }}>Cards</span>
+              <span className="badge" style={{ background: 'rgba(255,255,255,0.06)', color: '#fff', fontSize: '0.75rem' }}>Netbanking</span>
             </div>
           </div>
         </div>

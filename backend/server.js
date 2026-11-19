@@ -71,16 +71,33 @@ let sitemapCache = null;
 let sitemapCacheTime = 0;
 const SITEMAP_CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 
+// Same rules as frontend/public/robots.txt (the host serves that file directly when it exists)
 app.get('/robots.txt', (req, res) => {
   res.type('text/plain');
-  res.send(`# Mindfuels Publisher - Robots.txt
+  res.send(`# Mindfuels Publisher - robots.txt
 # https://mindfuelspublisher.com
 
+User-agent: Googlebot
+User-agent: Bingbot
+User-agent: Applebot
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: Applebot-Extended
 User-agent: *
 Allow: /
+Allow: /api/products
+Disallow: /admin
+Disallow: /profile
+Disallow: /cart
 Disallow: /api/
 Disallow: /health
-Disallow: /admin
 
 Sitemap: https://mindfuelspublisher.com/sitemap.xml
 `);

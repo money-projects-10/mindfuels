@@ -11,7 +11,12 @@ const gridMotion = {
   animate: 'show',
   variants: { show: { transition: { staggerChildren: 0.045 } } }
 };
-const gridItemVariants = { hidden: dialogMotion.initial, show: dialogMotion.animate };
+// Movement only, no fade: cards are visible from the first paint even if the
+// animation code is slow to load (or never loads) on a weak connection
+const gridItemVariants = {
+  hidden: { y: 10 },
+  show: { y: 0, transition: dialogMotion.animate.transition }
+};
 const buttonTap = { scale: 0.96 };
 const chipMotion = {
   initial: { opacity: 0, scale: 0.9 },
@@ -293,12 +298,23 @@ export default function AllProducts({ onProductClick, navigate }) {
     ...selectedInterests.map(v => ({ key: `interest-${v}`, label: v, onRemove: () => handleFilterToggle('interest', v) }))
   ];
 
+  // Page heading names what is being shown, e.g. "Mathematics books for 10-12 Yrs (Middle School)"
+  const pageHeading = (() => {
+    if (searchWord) return `Results for “${searchWord}”`;
+    const topic = selectedSubjects[0] ? `${selectedSubjects[0]} books` : selectedInterests[0];
+    const forClass = selectedClasses[0] ? classLabel(selectedClasses[0]) : '';
+    if (topic && forClass) return `${topic} for ${forClass}`;
+    if (topic) return topic;
+    if (forClass) return `Books for ${forClass}`;
+    return 'All books';
+  })();
+
   const rangeStart = totalItems === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
   const rangeEnd = Math.min((currentPage - 1) * PAGE_SIZE + products.length, totalItems);
 
   const renderFilterGroup = (title, category, items, selected) => (
     <section className="mf-filter-group">
-      <h4 className="mf-filter-title">{title}</h4>
+      <h2 className="mf-filter-title">{title}</h2>
       <div className={`mf-filter-list ${category === 'interest' ? 'mf-filter-list--scroll' : ''}`}>
         {items.map(item => {
           const value = typeof item === 'string' ? item : item.value;
@@ -343,15 +359,18 @@ export default function AllProducts({ onProductClick, navigate }) {
         </m.button>
       </div>
 
-      {/* Result count + active filter chips */}
+      {/* Page heading, result count + active filter chips */}
       <div className="mf-catalog-head" ref={resultsTopRef}>
-        <p className="mf-catalog-count" aria-live="polite">
-          {loading && products.length === 0
-            ? 'Finding books…'
-            : totalItems === 0
-              ? 'No books found'
-              : <>Showing <strong>{rangeStart}–{rangeEnd}</strong> of <strong>{totalItems}</strong> {totalItems === 1 ? 'book' : 'books'}</>}
-        </p>
+        <div className="mf-catalog-titles">
+          <h1 className="mf-catalog-title">{pageHeading}</h1>
+          <p className="mf-catalog-count" aria-live="polite">
+            {loading && products.length === 0
+              ? 'Finding books…'
+              : totalItems === 0
+                ? 'No books found'
+                : <>Showing <strong>{rangeStart} to {rangeEnd}</strong> of <strong>{totalItems}</strong> {totalItems === 1 ? 'book' : 'books'}</>}
+          </p>
+        </div>
 
         {activeChips.length > 0 && (
           <div className="mf-active-chips">
@@ -386,7 +405,7 @@ export default function AllProducts({ onProductClick, navigate }) {
         <aside className={`filter-sidebar ${sidebarOpen ? 'sidebar-open' : ''}`} aria-label="Filters">
           {/* Mobile Sidebar Header */}
           <div className="sidebar-mobile-header">
-            <h3 style={{ fontSize: '1.2rem' }}>Filters</h3>
+            <h2 style={{ fontSize: '1.2rem' }}>Filters</h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               {hasAnyFilter && (
                 <button type="button" className="mf-clear-link" onClick={clearAllFilters}>
@@ -403,8 +422,8 @@ export default function AllProducts({ onProductClick, navigate }) {
           {searchWord && (
             <div className="mf-search-chip">
               <div style={{ minWidth: 0 }}>
-                <div className="mf-search-chip-label">Active Search</div>
-                <div className="mf-search-chip-term">"{searchWord}"</div>
+                <div className="mf-search-chip-label">Searching for</div>
+                <div className="mf-search-chip-term">“{searchWord}”</div>
               </div>
               <button onClick={() => applyFilters(selectedClasses, selectedInterests, selectedSubjects, '')} className="mf-icon-btn" aria-label="Clear search">
                 <CloseIcon />
@@ -412,9 +431,9 @@ export default function AllProducts({ onProductClick, navigate }) {
             </div>
           )}
 
-          {renderFilterGroup('Shop by Class', 'class', classesList, selectedClasses)}
-          {renderFilterGroup('Shop by Subject', 'subject', subjectsList, selectedSubjects)}
-          {renderFilterGroup('Shop by Interest', 'interest', interestsList, selectedInterests)}
+          {renderFilterGroup('Shop by class', 'class', classesList, selectedClasses)}
+          {renderFilterGroup('Shop by subject', 'subject', subjectsList, selectedSubjects)}
+          {renderFilterGroup('Shop by interest', 'interest', interestsList, selectedInterests)}
         </aside>
 
         {/* Backdrop for mobile drawer */}
@@ -460,7 +479,7 @@ export default function AllProducts({ onProductClick, navigate }) {
                     <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
                   </svg>
                 </div>
-                <h3>Couldn't load the books</h3>
+                <h2>Couldn’t load the books</h2>
                 <p>Please check your internet connection and try again.</p>
                 <m.button type="button" className="btn btn-primary mf-empty-action" onClick={() => setRetryCount(c => c + 1)} whileTap={buttonTap}>
                   Try again
@@ -474,7 +493,7 @@ export default function AllProducts({ onProductClick, navigate }) {
                     <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
                   </svg>
                 </div>
-                <h3>No books match these filters</h3>
+                <h2>No books match these filters</h2>
                 <p>{activeChips.length > 1 ? 'Try removing one of the filters above.' : 'Try a different class, subject or search word.'}</p>
                 {hasAnyFilter && (
                   <m.button type="button" className="btn btn-primary mf-empty-action" onClick={clearAllFilters} whileTap={buttonTap}>
@@ -486,11 +505,12 @@ export default function AllProducts({ onProductClick, navigate }) {
               <>
                 {/* Responsive Grid */}
                 <m.div className="catalog-grid" {...gridMotion}>
-                  {products.map(product => (
+                  {products.map((product, idx) => (
                     <m.div key={product.product_id} className="catalog-grid-item" variants={gridItemVariants}>
                       <ProductCard
                         product={product}
                         onClick={onProductClick}
+                        priority={idx < 2}
                       />
                     </m.div>
                   ))}
@@ -560,10 +580,23 @@ export default function AllProducts({ onProductClick, navigate }) {
           display: flex;
           flex-wrap: wrap;
           justify-content: space-between;
-          align-items: center;
-          gap: 10px 12px;
-          margin-bottom: 20px;
+          align-items: flex-end;
+          gap: 12px;
+          margin-bottom: 24px;
           scroll-margin-top: 140px;
+        }
+        .mf-catalog-titles {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          min-width: 0;
+        }
+        .mf-catalog-title {
+          font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.1rem);
+          font-weight: 800;
+          line-height: 1.15;
+          overflow-wrap: break-word;
+          min-width: 0;
         }
         .mf-catalog-count {
           color: var(--dark-light);
@@ -588,12 +621,12 @@ export default function AllProducts({ onProductClick, navigate }) {
           align-items: center;
           gap: 6px;
           max-width: 100%;
-          min-height: 36px;
-          padding: 6px 10px 6px 14px;
+          min-height: 44px;
+          padding: 8px 12px 8px 16px;
           border-radius: 999px;
-          background: #FFF1EC;
-          border: 1px solid rgba(255, 90, 54, 0.3);
-          color: #C2410C;
+          background: var(--accent-soft);
+          border: 1px solid var(--accent-line);
+          color: var(--accent-ink);
           font-size: 0.85rem;
           font-weight: 600;
           line-height: 1.2;
@@ -609,11 +642,11 @@ export default function AllProducts({ onProductClick, navigate }) {
           flex-shrink: 0;
         }
         .mf-active-chip:hover {
-          background: #FFE4D9;
+          background: var(--accent-soft-strong);
         }
         .mf-clear-link {
-          min-height: 36px;
-          padding: 6px 10px;
+          min-height: 44px;
+          padding: 8px 12px;
           border-radius: 8px;
           color: var(--dark-light);
           font-size: 0.85rem;
@@ -663,15 +696,13 @@ export default function AllProducts({ onProductClick, navigate }) {
           border: 1px solid var(--border);
           border-radius: 16px;
           padding: 16px 12px 12px;
-          box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+          box-shadow: 0 1px 2px var(--ink-a04);
         }
         .mf-filter-title {
-          font-size: 0.78rem;
+          font-size: 1rem;
           font-weight: 700;
-          letter-spacing: 0.06em;
-          text-transform: uppercase;
-          color: var(--dark-light);
-          margin: 0 4px 10px;
+          color: var(--dark);
+          margin: 0 4px 8px;
         }
         .mf-filter-list {
           display: flex;
@@ -684,7 +715,7 @@ export default function AllProducts({ onProductClick, navigate }) {
           justify-content: space-between;
           gap: 8px;
           width: 100%;
-          min-height: 40px;
+          min-height: 44px;
           padding: 8px 12px;
           border: 1px solid transparent;
           border-radius: 10px;
@@ -701,9 +732,9 @@ export default function AllProducts({ onProductClick, navigate }) {
           color: var(--dark);
         }
         .mf-filter-option.is-selected {
-          background: #FFF1EC;
-          border-color: rgba(255, 90, 54, 0.28);
-          color: #C2410C;
+          background: var(--accent-soft);
+          border-color: var(--accent-line);
+          color: var(--accent-ink);
           font-weight: 600;
         }
         .mf-filter-option svg {
@@ -727,16 +758,14 @@ export default function AllProducts({ onProductClick, navigate }) {
           justify-content: space-between;
           gap: 8px;
           padding: 10px 6px 10px 14px;
-          background: #FFF1EC;
-          border: 1px solid rgba(255, 90, 54, 0.25);
+          background: var(--accent-soft);
+          border: 1px solid var(--accent-line);
           border-radius: 14px;
         }
         .mf-search-chip-label {
-          font-size: 0.72rem;
-          font-weight: 700;
-          letter-spacing: 0.06em;
-          text-transform: uppercase;
-          color: #C2410C;
+          font-size: 0.8rem;
+          font-weight: 600;
+          color: var(--accent-ink);
         }
         .mf-search-chip-term {
           font-size: 0.9rem;
@@ -756,7 +785,7 @@ export default function AllProducts({ onProductClick, navigate }) {
           transition: background-color 0.15s ease, color 0.15s ease;
         }
         .mf-icon-btn:hover {
-          background: rgba(15, 23, 42, 0.06);
+          background: var(--ink-a06);
           color: var(--dark);
         }
 
@@ -779,7 +808,7 @@ export default function AllProducts({ onProductClick, navigate }) {
           font-family: var(--font-display);
           font-weight: 600;
           font-size: 0.95rem;
-          box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.05);
+          box-shadow: 0 1px 2px var(--ink-a04), 0 4px 12px var(--ink-a05);
         }
         .mf-filter-trigger svg {
           color: var(--primary);
@@ -794,14 +823,14 @@ export default function AllProducts({ onProductClick, navigate }) {
           padding: 0 6px;
           border-radius: 999px;
           background: var(--primary);
-          color: #fff;
+          color: var(--on-accent);
           font-size: 0.75rem;
           font-weight: 700;
         }
         .mf-filter-backdrop {
           position: fixed;
           inset: 0;
-          background: rgba(15, 23, 42, 0.4);
+          background: var(--scrim);
           z-index: 1050;
         }
 
@@ -814,7 +843,7 @@ export default function AllProducts({ onProductClick, navigate }) {
           height: 3px;
           border-radius: 2px;
           overflow: hidden;
-          background: rgba(255, 90, 54, 0.12);
+          background: var(--accent-wash);
           z-index: 10;
         }
         .mf-loadbar::after {
@@ -834,7 +863,7 @@ export default function AllProducts({ onProductClick, navigate }) {
           padding: 48px 20px;
           text-align: center;
           background: var(--white);
-          border: 1px dashed #CBD5E1;
+          border: 1px dashed var(--line-strong);
           border-radius: 20px;
         }
         .mf-empty-icon {
@@ -845,10 +874,10 @@ export default function AllProducts({ onProductClick, navigate }) {
           height: 56px;
           margin-bottom: 8px;
           border-radius: 16px;
-          background: #FFF1EC;
+          background: var(--accent-soft);
           color: var(--primary);
         }
-        .mf-empty h3 {
+        .mf-empty h2 {
           font-size: 1.2rem;
         }
         .mf-empty p {
@@ -897,7 +926,7 @@ export default function AllProducts({ onProductClick, navigate }) {
           font-weight: 600;
           font-size: 0.9rem;
           font-variant-numeric: tabular-nums;
-          box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+          box-shadow: 0 1px 2px var(--ink-a04);
           transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
         }
         .mf-page-btn {
@@ -910,13 +939,13 @@ export default function AllProducts({ onProductClick, navigate }) {
         .mf-page-num.is-current {
           background: var(--dark);
           border-color: var(--dark);
-          color: #fff;
+          color: var(--on-accent);
           cursor: default;
         }
         .mf-page-btn:hover:not(:disabled),
         .mf-page-num:not(.is-current):hover {
           border-color: var(--primary);
-          color: #C2410C;
+          color: var(--accent-ink);
         }
         .mf-page-btn:disabled {
           opacity: 0.45;
@@ -945,8 +974,8 @@ export default function AllProducts({ onProductClick, navigate }) {
             z-index: 30;
             margin: 0 -14px 12px;
             padding: 10px 14px;
-            background: rgba(248, 250, 252, 0.96);
-            border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+            background: var(--surface-frost);
+            border-bottom: 1px solid var(--line-soft);
           }
           .mf-catalog-head {
             margin-bottom: 14px;
@@ -962,7 +991,7 @@ export default function AllProducts({ onProductClick, navigate }) {
             bottom: 0;
             width: min(340px, 88vw);
             max-height: none;
-            background: #ffffff;
+            background: var(--white);
             z-index: 1060;
             box-shadow: var(--shadow-premium);
             padding: 16px 16px calc(24px + env(safe-area-inset-bottom, 0px));
@@ -984,7 +1013,7 @@ export default function AllProducts({ onProductClick, navigate }) {
             z-index: 1;
             margin: -16px -16px 0;
             padding: 16px 12px 12px 16px;
-            background: #ffffff;
+            background: var(--white);
           }
           .mf-filter-group {
             box-shadow: none;

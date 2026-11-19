@@ -14,7 +14,37 @@
   --border: #E2E8F0;         /* Soft border color */
   --success: #10B981;        /* Emerald green */
   --error: #EF4444;          /* Crimson red */
-  
+
+  /* Catalog & card palette — every colour the book cards and filters use */
+  --accent-ink: #C2410C;          /* brand orange darkened: passes AA as text and under white text */
+  --accent-ink-strong: #9A3412;
+  --accent-soft: #FFF1EC;
+  --accent-soft-strong: #FFE4D9;
+  --accent-line: rgba(255, 90, 54, 0.28);
+  --accent-line-soft: #FED7CB;
+  --accent-wash: rgba(255, 90, 54, 0.12);
+  --accent-shadow: rgba(194, 65, 12, 0.35);
+  --on-accent: #FFFFFF;
+  --success-ink: #047857;
+  --info-soft: #EFF6FF;
+  --info-ink: #1D4ED8;
+  --muted-ink: #64748B;
+  --line-strong: #CBD5E1;
+  --line-soft: rgba(226, 232, 240, 0.7);
+  --surface-muted: #F1F5F9;
+  --surface-skeleton: #EEF2F6;
+  --surface-frost: rgba(248, 250, 252, 0.96);
+  --veil: rgba(248, 250, 252, 0.6);
+  --wish-surface: rgba(255, 255, 255, 0.94);
+  --scrim: rgba(15, 23, 42, 0.4);
+  --ink-a04: rgba(15, 23, 42, 0.04);
+  --ink-a05: rgba(15, 23, 42, 0.05);
+  --ink-a06: rgba(15, 23, 42, 0.06);
+  --ink-a12: rgba(15, 23, 42, 0.12);
+  --ink-a18: rgba(15, 23, 42, 0.18);
+  --placeholder-sun: rgba(255, 210, 90, 0.35);
+  --placeholder-sky: rgba(74, 144, 226, 0.14);
+
   /* Fonts */
   --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -66,18 +96,28 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   color: var(--dark);
   line-height: 1.25;
+  text-wrap: balance;
 }
 
 a {
   text-decoration: none;
   color: inherit;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, opacity 0.2s ease;
 }
 
 button, input, select, textarea {
   font-family: inherit;
   font-size: inherit;
+}
+
+/* Keyboard users always see where they are; mouse/touch clicks stay ring-free */
+:focus:not(:focus-visible) {
   outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 button {
@@ -133,18 +173,29 @@ img, video {
   border-radius: 50px;
   font-family: var(--font-display);
   font-weight: 600;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
   box-shadow: var(--shadow-sm);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .btn-primary:hover {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* Solid darker brand orange: white text passes WCAG AA (the old light gradient was 3.1:1) */
 .btn-primary {
-  background: var(--gradient-brand);
-  color: var(--white);
+  background: var(--accent-ink);
+  color: var(--on-accent);
 }
 
 .btn-primary:hover {
+  background: var(--accent-ink-strong);
   transform: translateY(-2px);
-  box-shadow: 0 10px 20px -5px rgba(255, 90, 54, 0.4);
+  box-shadow: 0 10px 20px -5px var(--accent-shadow);
 }
 
 .btn-primary:active {
@@ -177,7 +228,6 @@ img, video {
   font-size: 0.75rem;
   font-weight: 600;
   border-radius: 20px;
-  text-transform: uppercase;
 }
 
 .badge-sale {
@@ -651,10 +701,10 @@ img, video {
    ═══════════════════════════════════ */
 .mf-card {
   --mf-card-radius: 18px;
-  --mf-card-accent: #C2410C;       /* brand orange darkened for AA text contrast */
-  --mf-card-accent-soft: #FFF1EC;
-  --mf-card-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.05);
-  --mf-card-shadow-hover: 0 4px 8px rgba(15, 23, 42, 0.04), 0 18px 36px -10px rgba(15, 23, 42, 0.18);
+  --mf-card-accent: var(--accent-ink);       /* brand orange darkened for AA text contrast */
+  --mf-card-accent-soft: var(--accent-soft);
+  --mf-card-shadow: 0 1px 2px var(--ink-a04), 0 4px 12px var(--ink-a05);
+  --mf-card-shadow-hover: 0 4px 8px var(--ink-a04), 0 18px 36px -10px var(--ink-a18);
   position: relative;
   isolation: isolate;
   container-type: inline-size;
@@ -693,7 +743,7 @@ img, video {
   position: relative;
   aspect-ratio: 10 / 13;
   overflow: hidden;
-  background: #F1F5F9;
+  background: var(--surface-muted);
   border-radius: calc(var(--mf-card-radius) - 1px) calc(var(--mf-card-radius) - 1px) 0 0;
 }
 
@@ -701,7 +751,6 @@ img, video {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Shown when a product has no cover or the cover URL fails to load */
@@ -717,8 +766,8 @@ img, video {
   text-align: center;
   color: var(--mf-card-accent);
   background:
-    radial-gradient(circle at 85% 12%, rgba(255, 210, 90, 0.35) 0 18%, transparent 19%),
-    radial-gradient(circle at 10% 90%, rgba(74, 144, 226, 0.14) 0 22%, transparent 23%),
+    radial-gradient(circle at 85% 12%, var(--placeholder-sun) 0 18%, transparent 19%),
+    radial-gradient(circle at 10% 90%, var(--placeholder-sky) 0 22%, transparent 23%),
     var(--mf-card-accent-soft);
 }
 
@@ -746,18 +795,16 @@ img, video {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(248, 250, 252, 0.6);
+  background: var(--veil);
 }
 
 .mf-card-soldout span {
   padding: 6px 14px;
   border-radius: 999px;
   background: var(--dark);
-  color: #fff;
-  font-size: 0.75rem;
+  color: var(--on-accent);
+  font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
 .mf-card-wish {
@@ -771,16 +818,16 @@ img, video {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--wish-surface);
   color: var(--dark-light);
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 1px 3px var(--ink-a12);
   transition: color 0.15s ease, background-color 0.15s ease;
 }
 
 .mf-card-wish:hover,
 .mf-card-wish.is-active {
   color: var(--error);
-  background: #fff;
+  background: var(--white);
 }
 
 .mf-card-wish:focus-visible {
@@ -804,8 +851,8 @@ img, video {
   white-space: nowrap;
   padding: 3px 10px;
   border-radius: 999px;
-  background: #EFF6FF;
-  color: #1D4ED8;
+  background: var(--info-soft);
+  color: var(--info-ink);
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.4;
@@ -822,6 +869,8 @@ img, video {
   line-height: 1.35;
   color: var(--dark);
   overflow-wrap: break-word;
+  min-width: 0;
+  text-wrap: balance;
 }
 
 .mf-card-price {
@@ -843,14 +892,14 @@ img, video {
 
 .mf-card-mrp {
   font-size: 0.85rem;
-  color: #64748B;
+  color: var(--muted-ink);
   text-decoration: line-through;
 }
 
 .mf-card-off {
   font-size: 0.8rem;
   font-weight: 700;
-  color: #047857;
+  color: var(--success-ink);
 }
 
 /* Card actions: [ Add to cart ] [ → details ] */
@@ -877,18 +926,18 @@ img, video {
   min-width: 0;
   gap: 6px;
   padding: 0 10px;
-  background: var(--mf-card-accent);   /* white on #C2410C passes AA */
-  color: #fff;
+  background: var(--mf-card-accent);   /* white on var(--accent-ink) passes AA */
+  color: var(--on-accent);
   font-size: 0.9rem;
   white-space: nowrap;
 }
 
 .mf-card-add:hover:not(:disabled) {
-  background: #9A3412;
+  background: var(--accent-ink-strong);
 }
 
 .mf-card-add.is-added {
-  background: #047857;
+  background: var(--success-ink);
 }
 
 .mf-card-add:disabled {
@@ -896,8 +945,8 @@ img, video {
 }
 
 .mf-card-add:disabled:not(.is-added) {
-  background: #E2E8F0;
-  color: #475569;
+  background: var(--border);
+  color: var(--dark-light);
 }
 
 .mf-card-details {
@@ -911,7 +960,7 @@ img, video {
 }
 
 .mf-card-details:hover {
-  background: #FFE4D9;
+  background: var(--accent-soft-strong);
 }
 
 .mf-card-add:focus-visible,
@@ -934,13 +983,11 @@ img, video {
 
 @media (hover: hover) {
   .mf-card:hover {
-    border-color: #FED7CB;
+    border-color: var(--accent-line-soft);
   }
+  /* One signal on the container (lift + shadow); the cover itself stays still */
   .mf-card:hover::after {
     opacity: 1;
-  }
-  .mf-card:hover .mf-card-media img {
-    transform: scale(1.04);
   }
   .mf-card:hover .mf-card-details svg {
     transform: translateX(2px);
@@ -1001,11 +1048,9 @@ img, video {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mf-card-media img,
   .mf-card-details svg {
     transition: none;
   }
-  .mf-card:hover .mf-card-media img,
   .mf-card:hover .mf-card-details svg {
     transform: none;
   }
@@ -1074,7 +1119,7 @@ img, video {
 
 .mf-skel-media {
   aspect-ratio: 10 / 13;
-  background: #EEF2F6;
+  background: var(--surface-skeleton);
 }
 
 .mf-skel-body {
@@ -1087,5 +1132,5 @@ img, video {
 .mf-skel-line {
   height: 14px;
   border-radius: 6px;
-  background: #EEF2F6;
+  background: var(--surface-skeleton);
 }

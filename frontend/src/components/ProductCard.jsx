@@ -9,7 +9,8 @@ const cardTap = { scale: 0.98, transition: { type: 'spring', bounce: 0, visualDu
 const iconTap = { scale: 0.88 };
 const buttonTap = { scale: 0.95 };
 
-export default function ProductCard({ product, onClick }) {
+// priority: the first covers on screen load straight away (they are what a visitor sees first)
+export default function ProductCard({ product, onClick, priority = false }) {
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
 
@@ -48,9 +49,6 @@ export default function ProductCard({ product, onClick }) {
 
   const isOutOfStock = parseInt(product.stock_qty, 10) <= 0;
 
-  // First non-empty tag (class / subject / interest) shown as a single chip
-  const tag = [product.tag1, product.tag2, product.tag3].find(t => t && t.trim());
-
   // Remember which URL failed so a new image1 gets a fresh attempt
   const [failedSrc, setFailedSrc] = useState(null);
   const imageSrc = product.image1 && product.image1.trim();
@@ -77,7 +75,14 @@ export default function ProductCard({ product, onClick }) {
       {/* Cover Image */}
       <div className="mf-card-media">
         {showImage ? (
-          <img src={imageSrc} alt={product.title} loading="lazy" decoding="async" onError={() => setFailedSrc(imageSrc)} />
+          <img
+            src={imageSrc}
+            alt={product.title}
+            loading={priority ? 'eager' : 'lazy'}
+            fetchpriority={priority ? 'high' : undefined}
+            decoding="async"
+            onError={() => setFailedSrc(imageSrc)}
+          />
         ) : (
           /* Branded placeholder for missing or broken covers — fills the same frame, so no layout shift */
           <div className="mf-card-placeholder" role="img" aria-label={product.title}>
@@ -112,14 +117,11 @@ export default function ProductCard({ product, onClick }) {
       </div>
 
       {/* Book Metadata details */}
+      {/* Category tags (tag1-3) are for filtering only and are never shown to customers */}
       <div className="mf-card-body">
-        {tag && (
-          <span className="mf-card-tag" title={tag}>{tag}</span>
-        )}
-
-        <h4 className="mf-card-title">
+        <h3 className="mf-card-title">
           {product.title}
-        </h4>
+        </h3>
 
         <div className="mf-card-price">
           <span className="mf-card-sp">₹{product.sp}</span>

@@ -452,7 +452,7 @@ export default function ProductDetailModal({ productId, onClose }) {
               {isDiscounted && (
                 <>
                   <span style={{ fontSize: '1.2rem', color: 'var(--dark-light)', textDecoration: 'line-through' }}>₹{product.mrp}</span>
-                  <span className="badge badge-discount">{discountPercent}% OFF</span>
+                  <span className="badge badge-discount">{discountPercent}% off</span>
                 </>
               )}
             </div>
@@ -520,7 +520,7 @@ export default function ProductDetailModal({ productId, onClose }) {
           padding: 20px;
         }
         .modal-card {
-          background: #ffffff;
+          background: var(--white);
           width: 100%;
           max-width: 900px;
           border-radius: 20px;
@@ -580,7 +580,7 @@ export default function ProductDetailModal({ productId, onClose }) {
           justify-content: center;
           overflow: hidden;
           border-radius: 12px;
-          background: #fff;
+          background: var(--white);
           border: 1px solid var(--border);
         }
         .gallery-nav-btn {
@@ -602,7 +602,7 @@ export default function ProductDetailModal({ productId, onClose }) {
           z-index: 10;
         }
         .gallery-nav-btn:hover {
-          background: #ffffff;
+          background: var(--white);
           transform: translateY(-50%) scale(1.1);
         }
         .gallery-nav-btn:active {
@@ -652,7 +652,7 @@ export default function ProductDetailModal({ productId, onClose }) {
           width: 7px;
           height: 7px;
           border-radius: 999px;
-          background: #CBD5E1;
+          background: var(--line-strong);
           transition: width 0.25s ease, background-color 0.25s ease;
         }
         .gallery-dot.is-active {
@@ -680,8 +680,8 @@ export default function ProductDetailModal({ productId, onClose }) {
           align-items: center;
           justify-content: center;
           gap: 6px;
-          background: #FFF1EC;
-          color: #C2410C;
+          background: var(--accent-soft);
+          color: var(--accent-ink);
           text-align: center;
         }
         .modal-img-placeholder strong {
@@ -696,7 +696,7 @@ export default function ProductDetailModal({ productId, onClose }) {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          color: #047857;
+          color: var(--success-ink);
           font-weight: 700;
           font-size: 0.95rem;
           white-space: nowrap;
@@ -721,7 +721,7 @@ export default function ProductDetailModal({ productId, onClose }) {
           overflow: hidden;
           border: 2px solid transparent;
           cursor: pointer;
-          background: #fff;
+          background: var(--white);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -807,7 +807,7 @@ export default function ProductDetailModal({ productId, onClose }) {
             border-bottom: 1px solid var(--border);
             padding: 6px 0 10px;
             gap: 10px;
-            background: #fff;
+            background: var(--white);
           }
           .main-preview-container {
             flex: none;

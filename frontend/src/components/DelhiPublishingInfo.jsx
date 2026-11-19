@@ -7,50 +7,49 @@ export default function DelhiPublishingInfo({ navigate }) {
     setOpenFaq(openFaq === idx ? null : idx);
   };
 
-  const pillars = [
+  // Short trust points shown as one quiet strip (no claims beyond what the business confirms)
+  const trustPoints = [
     {
       icon: (
-        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
         </svg>
       ),
-      title: '20+ Years Educational Legacy',
-      desc: 'Originating in the historic publishing hub of Delhi, we have supplied premier preschools and schools for over two decades.'
+      title: '20+ years',
+      text: 'publishing for children'
     },
     {
       icon: (
-        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10"></circle>
-          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6"></path>
         </svg>
       ),
-      title: 'Curriculum-Aligned Learning',
-      desc: 'Expertly designed for CBSE, ICSE, and Montessori early-childhood frameworks from Nursery to Class 8.'
+      title: 'Trusted by schools',
+      text: 'teachers and parents'
     },
     {
       icon: (
-        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
           <rect x="1" y="3" width="15" height="13"></rect>
           <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
           <circle cx="5.5" cy="18.5" r="2.5"></circle>
           <circle cx="18.5" cy="18.5" r="2.5"></circle>
         </svg>
       ),
-      title: 'Delhi NCR Express Dispatch',
-      desc: 'Dispatched within 24-48 hours across South Delhi, Rohini, Dwarka, Noida, Gurgaon, Ghaziabad & all of India.'
+      title: 'Free delivery',
+      text: 'all over India'
     },
     {
       icon: (
-        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
           <circle cx="9" cy="7" r="4"></circle>
           <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
           <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
         </svg>
       ),
-      title: 'School & Bulk Supplies',
-      desc: 'Direct publisher rates, academic session syllabus kits, and institutional packages for preschool chains.'
+      title: 'Bulk orders',
+      text: 'for schools and tutors'
     }
   ];
 
@@ -76,76 +75,24 @@ export default function DelhiPublishingInfo({ navigate }) {
   return (
     <section className="delhi-seo-section" style={{
       background: 'linear-gradient(180deg, #FAF8F5 0%, #FFFFFF 100%)',
-      padding: '70px 20px',
+      padding: '40px 20px 56px',
       borderTop: '1px solid var(--border)',
       fontFamily: 'var(--font-body)'
     }}>
-      <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '50px' }}>
-        
-        {/* Section Header */}
-        <div style={{ textAlign: 'center', maxWidth: '820px', margin: '0 auto' }}>
-          <span style={{
-            display: 'inline-block',
-            padding: '4px 14px',
-            borderRadius: '50px',
-            background: 'rgba(255, 90, 54, 0.1)',
-            color: 'var(--primary)',
-            fontSize: '0.8rem',
-            fontWeight: 700,
-            textTransform: 'uppercase',
-            letterSpacing: '1px',
-            marginBottom: '12px',
-            fontFamily: 'var(--font-display)'
-          }}>
-            Publisher Direct in Delhi NCR & Pan-India
-          </span>
-          <h2 style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--dark)', lineHeight: '1.25' }}>
-            Empowering Young Minds With Meaningful, Screen-Free Learning
-          </h2>
-          <p style={{ color: 'var(--dark-light)', fontSize: '1rem', marginTop: '12px', lineHeight: '1.6' }}>
-            Rooted in Delhi’s prestigious publishing heritage, Mindfuels creates curriculum-aligned workbooks, phonics kits, and moral stories trusted by leading schools, educators, and thousands of mindful parents.
-          </p>
-        </div>
+      <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
 
-        {/* 4 Feature Pillars Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-          gap: '24px'
-        }}>
-          {pillars.map((item, idx) => (
-            <div key={idx} className="glass-panel" style={{
-              padding: '28px 22px',
-              borderRadius: '16px',
-              border: '1px solid var(--border)',
-              background: '#FFFFFF',
-              boxShadow: 'var(--shadow-sm)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '14px',
-              transition: 'transform 0.2s, box-shadow 0.2s'
-            }}>
-              <div style={{
-                width: '46px',
-                height: '46px',
-                borderRadius: '12px',
-                background: 'rgba(255, 90, 54, 0.1)',
-                color: 'var(--primary)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                {item.icon}
-              </div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--dark)', margin: 0 }}>
-                {item.title}
-              </h3>
-              <p style={{ fontSize: '0.88rem', color: 'var(--dark-light)', margin: 0, lineHeight: '1.5' }}>
-                {item.desc}
-              </p>
-            </div>
+        {/* Slim trust strip: present, but not competing with the books */}
+        <ul className="trust-strip" aria-label="Why parents choose Mindfuels">
+          {trustPoints.map((item) => (
+            <li key={item.title} className="trust-strip-item">
+              <span className="trust-strip-icon">{item.icon}</span>
+              <span className="trust-strip-text">
+                <strong>{item.title}</strong>
+                <span>{item.text}</span>
+              </span>
+            </li>
           ))}
-        </div>
+        </ul>
 
         {/* Informational Callout Banner */}
         <div style={{
@@ -160,9 +107,9 @@ export default function DelhiPublishingInfo({ navigate }) {
           gap: '20px'
         }}>
           <div style={{ maxWidth: '650px' }}>
-            <h4 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--dark)', marginBottom: '8px' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--dark)', marginBottom: '8px' }}>
               Are You a School Principal, Teacher, or Daycare Director?
-            </h4>
+            </h2>
             <p style={{ color: 'var(--dark-light)', fontSize: '0.9rem', margin: 0, lineHeight: '1.5' }}>
               We offer personalized curriculum counseling, bulk order discounts, and customized school book sets across Delhi, Noida, Gurgaon, and Pan-India.
             </p>
@@ -190,9 +137,9 @@ export default function DelhiPublishingInfo({ navigate }) {
         {/* Interactive FAQ Section for Parents & Search Snippets */}
         <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%' }}>
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <h3 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--dark)' }}>
+            <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--dark)' }}>
               Frequently Asked Questions
-            </h3>
+            </h2>
             <p style={{ color: 'var(--dark-light)', fontSize: '0.9rem', marginTop: '6px' }}>
               Everything you need to know about our books, shipping, and school partnerships.
             </p>
@@ -267,6 +214,82 @@ export default function DelhiPublishingInfo({ navigate }) {
         </div>
 
       </div>
+
+      <style>{`
+        .trust-strip {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          margin: 0;
+          padding: 14px 8px;
+          list-style: none;
+          background: var(--white);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+        }
+        .trust-strip-item {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          padding: 6px 12px;
+          min-width: 0;
+        }
+        .trust-strip-item + .trust-strip-item {
+          border-left: 1px solid var(--line-soft);
+        }
+        .trust-strip-icon {
+          flex: 0 0 auto;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          background: var(--accent-soft);
+          color: var(--accent-ink);
+        }
+        .trust-strip-text {
+          display: flex;
+          flex-direction: column;
+          line-height: 1.3;
+          min-width: 0;
+        }
+        .trust-strip-text strong {
+          font-size: 0.92rem;
+          font-weight: 700;
+          color: var(--dark);
+        }
+        .trust-strip-text span {
+          font-size: 0.82rem;
+          color: var(--dark-light);
+        }
+        /* Phones: two by two, left-aligned */
+        @media (max-width: 768px) {
+          .trust-strip {
+            grid-template-columns: repeat(2, 1fr);
+            row-gap: 4px;
+            padding: 8px 4px;
+          }
+          .trust-strip-item {
+            justify-content: flex-start;
+            gap: 10px;
+            padding: 8px 10px;
+          }
+          .trust-strip-item + .trust-strip-item {
+            border-left: none;
+          }
+          .trust-strip-icon {
+            width: 32px;
+            height: 32px;
+          }
+          .trust-strip-text strong {
+            font-size: 0.86rem;
+          }
+          .trust-strip-text span {
+            font-size: 0.78rem;
+          }
+        }
+      `}</style>
     </section>
   );
 }

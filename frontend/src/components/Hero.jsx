@@ -17,7 +17,7 @@ export default function Hero({ navigate }) {
       {/* Primary Banner Image Area */}
       <div className="hero-banner" style={{
         width: '100%',
-        backgroundImage: 'url("/photos/hero-image.png")',
+        backgroundImage: 'url("/photos/hero-image.webp")', // WebP: same picture, about 85% smaller than the PNG
         backgroundSize: 'cover',
         backgroundPosition: 'center center',
         backgroundRepeat: 'no-repeat',

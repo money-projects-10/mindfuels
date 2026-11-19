@@ -1,105 +1,75 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 
-function TestimonialCard({ videoSrc, isActive, onToggleActive }) {
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function TestimonialCard({ videoSrc, index, total, isActive, onToggle, onStop }) {
   const videoRef = useRef(null);
-  const containerRef = useRef(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const cardRef = useRef(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  // Lazy load: only load video when card scrolls into view
+  // Load the video only when the card comes near the screen,
+  // and stop it when it is scrolled out of view
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect(); // Only need to load once
-        }
+        if (entry.isIntersecting) setIsLoaded(true);
+        else if (videoRef.current && !videoRef.current.paused) onStop();
       },
-      { rootMargin: '200px' } // Start loading 200px before visible
+      { rootMargin: '200px' }
     );
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
+    if (cardRef.current) observer.observe(cardRef.current);
     return () => observer.disconnect();
-  }, []);
+  }, [onStop]);
 
   useEffect(() => {
     if (!videoRef.current) return;
     if (isActive) {
-      videoRef.current.play().catch(err => {
-        console.log('Play failed/blocked:', err);
-      });
+      videoRef.current.play().catch(() => onStop());
     } else {
       videoRef.current.pause();
     }
-  }, [isActive]);
+  }, [isActive, isLoaded, onStop]);
 
   return (
-    <div 
-      ref={containerRef}
-      className="glass-panel testimonial-card" 
-      style={{
-        flex: '0 0 240px',
-        height: '426px',
-        borderRadius: '16px',
-        overflow: 'hidden',
-        position: 'relative',
-        boxShadow: 'var(--shadow-sm)',
-        border: '1px solid var(--border)',
-        background: '#000',
-        cursor: 'pointer'
-      }} 
-      onClick={onToggleActive}
+    <button
+      ref={cardRef}
+      type="button"
+      className={`testimonial-card ${isActive ? 'is-playing' : ''}`}
+      onClick={onToggle}
+      aria-pressed={isActive}
+      aria-label={`${isActive ? 'Pause' : 'Play'} video ${index + 1} of ${total}`}
     >
-      {isVisible ? (
+      {isLoaded ? (
         <video
           ref={videoRef}
           src={`${videoSrc}#t=0.1`}
           preload="metadata"
           playsInline
           loop
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          tabIndex={-1}
         />
       ) : (
-        <div style={{ width: '100%', height: '100%', background: '#1a1a1a' }} />
+        <span className="testimonial-poster" aria-hidden="true" />
       )}
-      
+
       {!isActive && (
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.15)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transition: 'all 0.3s ease'
-        }} className="play-overlay">
-          <div className="play-circle" style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '50%',
-            background: 'rgba(255, 255, 255, 0.95)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
-            color: 'var(--primary)',
-            transition: 'all 0.2s ease'
-          }}>
+        <span className="play-overlay" aria-hidden="true">
+          <span className="play-circle">
             <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" style={{ marginLeft: '2px' }}>
               <path d="M8 5v14l11-7z"></path>
             </svg>
-          </div>
-        </div>
+          </span>
+        </span>
       )}
-    </div>
+    </button>
   );
 }
 
 export default function Testimonials() {
   const [activeIdx, setActiveIdx] = useState(null);
+  const [atStart, setAtStart] = useState(true);
+  const [atEnd, setAtEnd] = useState(false);
   const scrollRef = useRef(null);
 
   const testimonials = [
@@ -116,83 +86,80 @@ export default function Testimonials() {
     { video: '/testimonial_videos/vid11.mp4' }
   ];
 
+  // Grey out the arrows at either end of the row
+  const updateEnds = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setAtStart(el.scrollLeft <= 4);
+    setAtEnd(el.scrollLeft + el.clientWidth >= el.scrollWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    updateEnds();
+    window.addEventListener('resize', updateEnds);
+    return () => window.removeEventListener('resize', updateEnds);
+  }, [updateEnds]);
+
   const scroll = (direction) => {
-    if (scrollRef.current) {
-      const { scrollLeft } = scrollRef.current;
-      const scrollAmount = 260; // card width (240) + gap (20)
-      scrollRef.current.scrollTo({
-        left: direction === 'left' ? scrollLeft - scrollAmount : scrollLeft + scrollAmount,
-        behavior: 'smooth'
-      });
-    }
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollBy({
+      left: (direction === 'left' ? -1 : 1) * el.clientWidth * 0.8,
+      behavior: prefersReducedMotion() ? 'auto' : 'smooth'
+    });
   };
 
-  const handleToggle = (idx) => {
-    if (activeIdx === idx) {
-      setActiveIdx(null); // Pause if clicked again
-    } else {
-      setActiveIdx(idx); // Play clicked, pauses any other active video
-    }
-  };
+  const stopPlaying = useCallback(() => setActiveIdx(null), []);
 
   return (
-    <section style={{ background: '#FFFDF9', padding: '60px 0', borderTop: '1px solid var(--border)' }}>
-      <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-        
-        <div style={{ textAlign: 'center' }}>
-          <h2 style={{ fontSize: '2rem', fontWeight: 800 }}>Loved by Parents & Teachers</h2>
-          <p style={{ color: 'var(--dark-light)', marginTop: '8px', maxWidth: '600px', margin: '8px auto 0' }}>
-            Hear directly from the educators and parents who trust Mindfuels books to power children's early educational journeys.
-          </p>
+    <section className="testimonials-section">
+      <div className="container testimonials-inner">
+        <div className="testimonials-header">
+          <h2>Loved by parents and teachers</h2>
+          <p>Hear from the parents, teachers and children who learn with Mindfuels books.</p>
         </div>
 
-        {/* Carousel Wrapper */}
-        <div style={{ position: 'relative', width: '100%', display: 'flex', alignItems: 'center' }}>
-          {/* Left Button */}
-          <button 
-            onClick={() => scroll('left')} 
-            className="carousel-btn" 
-            style={{ left: '-22px' }}
-            aria-label="Previous testimonials"
+        <div className="testimonials-carousel">
+          <button
+            type="button"
+            onClick={() => scroll('left')}
+            className="carousel-btn carousel-btn-prev"
+            aria-label="Previous videos"
+            disabled={atStart}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
           </button>
 
-          {/* Horizontal Scroll Row */}
-          <div 
-            ref={scrollRef} 
-            className="testimonials-scroll-row" 
-            style={{
-              display: 'flex',
-              gap: '20px',
-              overflowX: 'auto',
-              scrollBehavior: 'smooth',
-              width: '100%',
-              padding: '10px 0',
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none'
-            }}
+          <div
+            ref={scrollRef}
+            className={`testimonials-scroll-row ${atStart ? '' : 'fade-start'} ${atEnd ? '' : 'fade-end'}`}
+            onScroll={updateEnds}
+            role="region"
+            aria-label="Video testimonials"
           >
             {testimonials.map((t, idx) => (
               <TestimonialCard
                 key={idx}
                 videoSrc={t.video}
+                index={idx}
+                total={testimonials.length}
                 isActive={activeIdx === idx}
-                onToggleActive={() => handleToggle(idx)}
+                onToggle={() => setActiveIdx(activeIdx === idx ? null : idx)}
+                onStop={stopPlaying}
               />
             ))}
           </div>
 
-          {/* Right Button */}
-          <button 
-            onClick={() => scroll('right')} 
-            className="carousel-btn" 
-            style={{ right: '-22px' }}
-            aria-label="Next testimonials"
+          <button
+            type="button"
+            onClick={() => scroll('right')}
+            className="carousel-btn carousel-btn-next"
+            aria-label="Next videos"
+            disabled={atEnd}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
           </button>
@@ -200,32 +167,175 @@ export default function Testimonials() {
       </div>
 
       <style>{`
+        .testimonials-section {
+          background: #FFFDF9;
+          padding: 48px 0;
+          border-top: 1px solid var(--border);
+        }
+        .testimonials-inner {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
+        .testimonials-header {
+          text-align: center;
+        }
+        .testimonials-header h2 {
+          font-size: 1.75rem;
+          font-weight: 800;
+        }
+        .testimonials-header p {
+          color: var(--dark-light);
+          max-width: 520px;
+          margin: 6px auto 0;
+        }
+        .testimonials-carousel {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+        .testimonials-scroll-row {
+          display: flex;
+          gap: 16px;
+          width: 100%;
+          overflow-x: auto;
+          padding: 6px 2px;
+          scroll-snap-type: x mandatory;
+          scrollbar-width: none;
+        }
         .testimonials-scroll-row::-webkit-scrollbar {
           display: none;
         }
+        /* Soft fade on the side that has more videos to scroll to */
+        .testimonials-scroll-row.fade-end {
+          -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+          mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+        }
+        .testimonials-scroll-row.fade-start {
+          -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 40px), transparent);
+          mask-image: linear-gradient(to left, #000 calc(100% - 40px), transparent);
+        }
+        .testimonials-scroll-row.fade-start.fade-end {
+          -webkit-mask-image: linear-gradient(to right, transparent, #000 40px, #000 calc(100% - 40px), transparent);
+          mask-image: linear-gradient(to right, transparent, #000 40px, #000 calc(100% - 40px), transparent);
+        }
+        .testimonial-card {
+          position: relative;
+          flex: 0 0 220px;
+          aspect-ratio: 9 / 16;
+          padding: 0;
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          overflow: hidden;
+          background: #1a1a1a;
+          box-shadow: var(--shadow-sm);
+          cursor: pointer;
+          scroll-snap-align: start;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .testimonial-card video,
+        .testimonial-poster {
+          display: block;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .testimonial-card.is-playing {
+          outline: 3px solid var(--accent-ink);
+          outline-offset: -3px;
+        }
+        .testimonial-card:focus-visible {
+          outline: 3px solid var(--primary);
+          outline-offset: 2px;
+        }
+        .play-overlay {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(180deg, transparent 55%, rgba(0, 0, 0, 0.35));
+        }
+        .play-circle {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 52px;
+          height: 52px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.95);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+          color: var(--accent-ink);
+          transition: transform 0.2s ease;
+        }
         .carousel-btn {
           position: absolute;
+          z-index: 10;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           width: 44px;
           height: 44px;
           border-radius: 50%;
           background: #ffffff;
           border: 1px solid var(--border);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          z-index: 10;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
           color: var(--dark);
-          transition: all 0.2s;
+          cursor: pointer;
+          transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
         }
-        .carousel-btn:hover {
+        .carousel-btn-prev { left: -22px; }
+        .carousel-btn-next { right: -22px; }
+        .carousel-btn:hover:not(:disabled) {
           background: var(--light);
-          transform: scale(1.05);
-          color: var(--primary);
+          color: var(--accent-ink);
         }
-        .testimonial-card:hover .play-circle {
-          transform: scale(1.1);
+        .carousel-btn:disabled {
+          opacity: 0;
+          pointer-events: none;
+        }
+        @media (hover: hover) {
+          .testimonial-card:hover .play-circle {
+            transform: scale(1.08);
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .play-circle,
+          .carousel-btn {
+            transition: none;
+          }
+          .testimonial-card:hover .play-circle {
+            transform: none;
+          }
+        }
+        /* Phones and tablets: swipe the row, no arrows */
+        @media (max-width: 768px) {
+          .testimonials-section {
+            padding: 32px 0;
+          }
+          .testimonials-inner {
+            gap: 18px;
+          }
+          .testimonials-header h2 {
+            font-size: 1.4rem;
+          }
+          .testimonials-header p {
+            font-size: 0.92rem;
+          }
+          .testimonials-scroll-row {
+            gap: 12px;
+          }
+          .testimonial-card {
+            flex-basis: 150px;
+            border-radius: 14px;
+          }
+          .play-circle {
+            width: 44px;
+            height: 44px;
+          }
+          .carousel-btn {
+            display: none;
+          }
         }
       `}</style>
     </section>

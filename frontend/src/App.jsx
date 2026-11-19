@@ -33,6 +33,7 @@ import Testimonials from './components/Testimonials.jsx';
 import DelhiPublishingInfo from './components/DelhiPublishingInfo.jsx';
 
 import { updatePageSEO } from './utils/seo.js';
+import { initAnalytics, trackPageView } from './utils/analytics.js';
 
 function MainApp() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -51,8 +52,10 @@ function MainApp() {
       } else {
         setActiveProductId(null);
       }
+      trackPageView();
     };
 
+    initAnalytics();
     window.addEventListener('popstate', handleLocationChange);
     // Run initially
     handleLocationChange();
@@ -137,6 +140,7 @@ function MainApp() {
     
     window.history.pushState({}, '', newUrl);
     setActiveProductId(productId);
+    trackPageView();
   };
 
   // Render page content based on custom router path state
@@ -171,7 +175,8 @@ function MainApp() {
     <div className="app-layout" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar currentPath={currentPath} navigate={navigate} />
       
-      <main style={{ flex: '1 0 auto', paddingTop: '60px' }}>
+      {/* At least one screen tall, so the footer stays below the fold while a page loads (no jump) */}
+      <main style={{ flex: '1 0 auto', paddingTop: '60px', minHeight: '100vh' }}>
         <Suspense fallback={<PageFallback />}>
           {renderPage()}
         </Suspense>

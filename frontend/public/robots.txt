@@ -1,12 +1,30 @@
-# Mindfuels Publisher - Robots.txt
+# Mindfuels Publisher - robots.txt
 # https://mindfuelspublisher.com
+#
+# Search engines and AI search assistants are welcome to read the public
+# catalogue, including the book list at /api/products that the catalogue
+# page loads. Account, cart, admin and other API pages stay private.
 
+User-agent: Googlebot
+User-agent: Bingbot
+User-agent: Applebot
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: Applebot-Extended
 User-agent: *
 Allow: /
+Allow: /api/products
 Disallow: /admin
 Disallow: /profile
+Disallow: /cart
 Disallow: /api/
 Disallow: /health
 
 Sitemap: https://mindfuelspublisher.com/sitemap.xml
-
