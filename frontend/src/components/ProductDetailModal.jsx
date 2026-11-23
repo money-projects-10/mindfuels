@@ -461,7 +461,7 @@ export default function ProductDetailModal({ productId, onClose }) {
             {/* Takes whatever height is left; long text scrolls here so the buy button stays on screen */}
             <div className="modal-description">
               <h4 style={{ fontSize: '0.9rem', color: 'var(--dark-light)', marginBottom: '6px' }}>Description</h4>
-              <p style={{ fontSize: '0.95rem', color: 'var(--dark)', whiteSpace: 'pre-line' }}>{product.description}</p>
+              <p className="modal-description-text">{product.description}</p>
             </div>
 
 
@@ -527,8 +527,8 @@ export default function ProductDetailModal({ productId, onClose }) {
           position: relative;
           overflow: hidden;
           /* Fixed height so everything fits in one screen — nothing below the fold */
-          height: min(88vh, 720px);
-          height: min(88dvh, 720px);
+          height: min(84vh, 620px);
+          height: min(84dvh, 620px);
           display: flex;
           flex-direction: column;
         }
@@ -562,7 +562,7 @@ export default function ProductDetailModal({ productId, onClose }) {
           overflow: hidden;
         }
         .gallery-section {
-          padding: 24px;
+          padding: 16px;
           background: #fafafa;
           border-right: 1px solid var(--border);
           display: flex;
@@ -715,8 +715,8 @@ export default function ProductDetailModal({ productId, onClose }) {
           padding-bottom: 4px;
         }
         .thumb-container {
-          flex: 0 0 60px;
-          height: 75px;
+          flex: 0 0 52px;
+          height: 60px;
           border-radius: 6px;
           overflow: hidden;
           border: 2px solid transparent;
@@ -734,16 +734,19 @@ export default function ProductDetailModal({ productId, onClose }) {
         .active-thumb {
           border-color: var(--primary);
         }
+        /* The card itself never scrolls — only the description box below does */
+        /* Fixed rows: title, price, description (takes the leftover height), buy row */
         .details-section {
-          padding: 32px 32px 28px;
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
+          padding: 20px 24px 16px;
+          display: grid;
+          grid-template-rows: auto auto minmax(0, 1fr) auto;
+          align-content: stretch;
+          row-gap: 8px;
           min-height: 0;
-          overflow-y: auto; /* safety net for very short windows only */
+          overflow: hidden;
         }
         .modal-title {
-          font-size: clamp(1.2rem, 0.9rem + 0.8vw, 1.5rem);
+          font-size: clamp(1.05rem, 0.95rem + 0.4vw, 1.3rem);
           font-weight: 800;
           line-height: 1.25;
         }
@@ -755,14 +758,24 @@ export default function ProductDetailModal({ productId, onClose }) {
           cursor: not-allowed;
         }
         .modal-price {
-          font-size: 1.75rem;
+          font-size: 1.5rem;
           font-weight: 800;
           color: var(--primary);
         }
+        /* Long descriptions scroll inside this box only; short ones take no extra space */
         .modal-description {
           flex: 1 1 auto;
           min-height: 0;
           overflow-y: auto;
+          overscroll-behavior: contain;
+          padding-right: 6px;
+          scrollbar-width: thin;
+        }
+        .modal-description-text {
+          font-size: 0.875rem;
+          line-height: 1.55;
+          color: var(--dark);
+          white-space: pre-line;
         }
         .modal-desktop-cta {
           flex-shrink: 0;
@@ -824,6 +837,8 @@ export default function ProductDetailModal({ productId, onClose }) {
             display: flex;
           }
           .details-section {
+            display: flex;
+            flex-direction: column;
             flex: 1 1 auto;
             padding: 12px 16px;
             gap: 10px;
