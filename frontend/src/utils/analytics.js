@@ -27,6 +27,12 @@ export function initAnalytics() {
   else window.addEventListener('load', load, { once: true });
 }
 
+// Custom events (e.g. Book Finder steps). Does nothing unless GA4 is switched on.
+export function trackEvent(name, params = {}) {
+  if (!enabled) return;
+  window.gtag?.('event', name, params);
+}
+
 // Called after every in-app page change; the short delay lets the page set its own title first
 export function trackPageView() {
   if (!enabled) return;

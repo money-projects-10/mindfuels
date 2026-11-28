@@ -344,7 +344,7 @@ export default function Cart({ navigate }) {
         {/* Animated Checkmark Circle */}
         <div style={{
           width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)',
-          display: 'flex', alignItems: 'center', justify: 'center', fontSize: '2.5rem', fontWeight: 'bold'
+          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', fontWeight: 'bold'
         }} className="flex-center">
           ✓
         </div>
@@ -362,7 +362,7 @@ export default function Cart({ navigate }) {
             <div><strong>Receipt emailed to:</strong> {confirmedOrderDetails.email_sent_to}</div>
           )}
           <div style={{ borderTop: '1px solid var(--border)', paddingTop: '12px', fontSize: '0.85rem', color: 'var(--dark-light)' }}>
-            <strong>Estimated Delivery:</strong> 4–7 business days. You can check your order status anytime under My Orders.
+            <strong>Estimated Delivery:</strong> 2–3 business days. You can check your order status anytime under My Orders.
           </div>
         </div>
 
@@ -396,7 +396,7 @@ export default function Cart({ navigate }) {
             ? itemsArr.map(i => `${i.title || i.name || 'Book'} (x${i.quantity || i.qty || 1})`).join(', ')
             : 'Mindfuels Educational Workbooks';
           
-          const waMessage = `Hi Mindfuels! 👋\n\nThis is *${custName}*. I’ve just placed *Order #${ordId}*.\n\n📦 *Items:* ${itemsFormatted}\n🧾 *Order Receipt:* Tax Invoice PDF Attached\n💳 *Payment Status:* Paid\n\nPlease confirm my order details. Thank you! 😊`;
+          const waMessage = `Hi Mindfuels! 👋\n\nThis is *${custName}*. I’ve just placed *Order #${ordId}*.\n\n📦 *Items:* ${itemsFormatted}\n💳 *Payment Status:* Paid\n\nPlease confirm my order details. Thank you! 😊`;
 
           return (
             <a

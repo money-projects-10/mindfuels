@@ -285,6 +285,13 @@ export default function Admin({ navigate }) {
             </p>
           </div>
           <button
+            onClick={() => navigate('/admin/leads')}
+            className="admin-btn"
+            style={{ background: 'rgba(255,90,54,0.15)', color: '#FF5A36', border: '1px solid rgba(255,90,54,0.3)' }}
+          >
+            📋 Book Finder leads
+          </button>
+          <button
             onClick={fetchData}
             className="admin-btn"
             style={{ background: 'rgba(255,90,54,0.15)', color: '#FF5A36', border: '1px solid rgba(255,90,54,0.3)' }}

@@ -19,6 +19,9 @@ import cartRoutes from './routes/cartRoutes.js';
 import wishlistRoutes from './routes/wishlistRoutes.js';
 import addressRoutes from './routes/addressRoutes.js';
 import checkoutRoutes from './routes/checkoutRoutes.js';
+import { razorpayWebhook } from './controllers/checkoutController.js';
+import { sendAdminAbandonedDigestEmail } from './services/emailService.js';
+import bookFinderRoutes from './routes/bookFinderRoutes.js';
 import pincodeRoutes from './routes/pincodeRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
@@ -39,6 +42,10 @@ app.use(cors(corsOptions));
 
 // Enable gzip/brotli response compression for all routes
 app.use(compression());
+
+// Razorpay webhook: must receive the raw body (unparsed) so its signature can be checked.
+// Registered before express.json() and before the rate limiter; it is protected by the signature instead.
+app.post('/api/checkout/webhook', express.raw({ type: 'application/json' }), razorpayWebhook);
 
 // Parsing JSON bodies
 app.use(express.json());
@@ -62,6 +69,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/addresses', addressRoutes);
 app.use('/api/checkout', checkoutRoutes);
+app.use('/api/book-finder', bookFinderRoutes);
 app.use('/api/pincode', pincodeRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
@@ -115,10 +123,11 @@ app.get('/sitemap.xml', async (req, res) => {
 
   let productUrls = '';
   try {
-    const [products] = await pool.query('SELECT product_id, updated_at FROM products WHERE is_active = 1 LIMIT 500');
+    // products has no is_active or updated_at column, so every product is listed with today's date
+    const [products] = await pool.query('SELECT product_id FROM products LIMIT 500');
     if (products && products.length > 0) {
       productUrls = products.map(p => {
-        const lastmod = p.updated_at ? new Date(p.updated_at).toISOString().split('T')[0] : now;
+        const lastmod = now;
         return `  <url>
     <loc>${baseUrl}/products?product=${encodeURIComponent(p.product_id)}</loc>
     <lastmod>${lastmod}</lastmod>
@@ -138,6 +147,12 @@ app.get('/sitemap.xml', async (req, res) => {
     <lastmod>${now}</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/book-finder</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>${baseUrl}/products</loc>
@@ -244,6 +259,36 @@ cron.schedule('*/30 * * * *', async () => {
     console.error('[CRON] Product sync failed:', error.message);
   }
 });
+
+// Owner digest every day at 9:00 IST: carts left behind (2–24 h idle) and checkouts not paid (last 24 h).
+// Owner-only email. Each cart/checkout falls into exactly one digest, so nothing repeats.
+async function sendAbandonedDigest() {
+  try {
+    const [carts] = await pool.query(`
+      SELECT u.name, u.email, u.phone, COUNT(c.product_id) AS item_count,
+             COALESCE(SUM(p.sp * c.quantity), 0) AS cart_value
+      FROM cart c
+      JOIN users u ON u.id = c.user_id
+      JOIN products p ON p.product_id = c.product_id
+      GROUP BY u.id, u.name, u.email, u.phone
+      HAVING MAX(c.added_at) BETWEEN NOW() - INTERVAL 24 HOUR AND NOW() - INTERVAL 2 HOUR
+      ORDER BY MAX(c.added_at) DESC
+    `);
+    const [unpaid] = await pool.query(`
+      SELECT o.id, o.total_amount, o.created_at, u.name, u.email
+      FROM orders o
+      JOIN users u ON u.id = o.user_id
+      WHERE o.payment_status = 'Unpaid'
+        AND o.created_at BETWEEN NOW() - INTERVAL 24 HOUR AND NOW() - INTERVAL 30 MINUTE
+      ORDER BY o.created_at DESC
+    `);
+    if (carts.length === 0 && unpaid.length === 0) return;
+    await sendAdminAbandonedDigestEmail({ carts, unpaid });
+  } catch (error) {
+    console.error('[Digest] Owner digest failed:', error.message);
+  }
+}
+cron.schedule('0 9 * * *', sendAbandonedDigest, { timezone: 'Asia/Kolkata' });
 
 // Run an initial sync on startup — NON-BLOCKING so the server accepts requests immediately
 const runInitialSync = () => {

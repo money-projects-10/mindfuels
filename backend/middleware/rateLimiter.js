@@ -19,6 +19,19 @@ export const paymentLimiter = rateLimit({
   message: { error: 'Too many payment requests, please try again after 15 minutes' }
 });
 
+// Book Finder lead form: 5 submissions per hour for each IP + email pair (spam protection, no CAPTCHA)
+export const bookFinderLeadLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    const email = String(req.body?.email || '').trim().toLowerCase();
+    return `${req.ip}|${email}`;
+  },
+  message: { error: 'Too many requests. Please try again later.' }
+});
+
 // Auth / Profile Sync rate limiter
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes

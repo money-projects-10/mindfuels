@@ -1,6 +1,7 @@
 import express from 'express';
 import { checkJwt, ensureUser, requireAdmin } from '../middleware/auth.js';
 import { getAdminStats, getAllOrders, getOrderDetail, updateOrderStatus } from '../controllers/adminController.js';
+import { listLeads, exportLeadsCsv } from '../controllers/bookFinderController.js';
 
 const router = express.Router();
 
@@ -11,5 +12,7 @@ router.get('/stats', getAdminStats);
 router.get('/orders', getAllOrders);
 router.get('/orders/:id', getOrderDetail);
 router.put('/orders/:id/status', updateOrderStatus);
+router.get('/book-finder-leads', listLeads);
+router.get('/book-finder-leads.csv', exportLeadsCsv);
 
 export default router;

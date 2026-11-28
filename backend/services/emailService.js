@@ -216,7 +216,7 @@ export async function sendOrderConfirmationEmail({ order, customer, items, addre
 
         <div style="margin-top:24px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;padding:16px 20px;font-size:14px;color:#0369a1;">
           <strong>📦 What happens next?</strong><br/>
-          <span style="color:#555;font-size:13px;">We're packing your books now and will deliver them in 4–7 business days. Your receipt is attached to this email as a PDF.
+          <span style="color:#555;font-size:13px;">We're packing your books now and will deliver them in 2–3 business days. Your receipt is attached to this email as a PDF.
           You can also view your order anytime under <a href="${SITE_URL}/profile" style="color:#FF5A36;">My Orders</a>.</span>
         </div>
       </div>
@@ -282,4 +282,110 @@ export async function sendAdminNewOrderEmail({ order, customer, items, address }
     `
   });
   console.log(`[Email] ✅ New-order alert sent to ${ADMIN_NOTIFY_EMAIL} for order #${order.id}`);
+}
+
+/**
+ * Book Finder: emails the recommended books to the person who asked for them.
+ * Includes an unsubscribe link (required for marketing email).
+ */
+export async function sendBookFinderListEmail({ to, name, bandLabels, products, resultsUrl, unsubscribeUrl }) {
+  const transporter = getTransporter();
+  if (!transporter) return false;
+
+  const productRows = products.map(p => {
+    const link = `${SITE_URL}/products?product=${encodeURIComponent(p.product_id)}`;
+    const img = p.image1
+      ? `<img src="${escapeHtml(p.image1)}" width="90" alt="${escapeHtml(p.title)}" style="border-radius:8px;display:block;" />`
+      : '';
+    return `
+      <tr>
+        <td style="padding:10px 12px 10px 0;width:100px;">${img}</td>
+        <td style="padding:10px 0;vertical-align:top;">
+          <a href="${link}" style="color:#1e293b;font-weight:bold;text-decoration:none;">${escapeHtml(p.title)}</a><br/>
+          <span style="color:#FF5A36;font-weight:bold;">₹${money(p.sp)}</span>
+          <a href="${link}" style="margin-left:10px;color:#FF5A36;">View book →</a>
+        </td>
+      </tr>`;
+  }).join('');
+
+  await transporter.sendMail({
+    from: `"Mindfuels" <${process.env.SMTP_USER}>`,
+    to,
+    subject: `Your book list for ${bandLabels} from Mindfuels`,
+    html: `
+      <div style="font-family:Arial,sans-serif;font-size:14px;color:#1e293b;line-height:1.6;max-width:600px;">
+        <h2 style="color:#FF5A36;margin:0 0 8px;">Hi${name ? ' ' + escapeHtml(name) : ''}, here is your list</h2>
+        <p style="margin:0 0 16px;">We picked these books for ${escapeHtml(bandLabels)}.</p>
+        <table style="width:100%;border-collapse:collapse;">${productRows}</table>
+        <p style="margin:20px 0;"><a href="${resultsUrl}" style="background:#FF5A36;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:bold;">Open your list on the website</a></p>
+        <p style="color:#64748b;font-size:12px;margin-top:24px;">
+          You asked us to send this list and occasional offers from Mindfuels.
+          <a href="${unsubscribeUrl}" style="color:#64748b;">Unsubscribe</a> at any time.
+        </p>
+      </div>
+    `
+  });
+  return true;
+}
+
+/**
+ * Owner alert for a school enquiry from the Book Finder.
+ * Subject line format: "New school enquiry from Book Finder: {school name}, {city}"
+ */
+export async function sendSchoolEnquiryAlert({ schoolName, city, phone, email, students, bandLabels }) {
+  const transporter = getTransporter();
+  if (!transporter) return false;
+
+  await transporter.sendMail({
+    from: `"Mindfuels Enquiries" <${process.env.SMTP_USER}>`,
+    to: ADMIN_NOTIFY_EMAIL,
+    subject: `New school enquiry from Book Finder: ${schoolName}, ${city}`,
+    html: `
+      <div style="font-family:Arial,sans-serif;font-size:14px;color:#1e293b;line-height:1.6;">
+        <h2 style="color:#FF5A36;margin:0 0 8px;">New school enquiry from the Book Finder</h2>
+        <p><strong>School:</strong> ${escapeHtml(schoolName)}<br/>
+           <strong>City:</strong> ${escapeHtml(city)}<br/>
+           <strong>Phone:</strong> ${escapeHtml(phone)}<br/>
+           <strong>Email:</strong> ${escapeHtml(email)}<br/>
+           <strong>Approx. students:</strong> ${escapeHtml(students)}<br/>
+           <strong>Classes asked about:</strong> ${escapeHtml(bandLabels)}</p>
+        <p><a href="${SITE_URL}/admin/leads" style="color:#FF5A36;font-weight:bold;">Open Book Finder leads →</a></p>
+      </div>
+    `
+  });
+  return true;
+}
+
+/**
+ * Owner-only daily digest: carts left behind and checkouts that never got paid (last 24 hours).
+ * Sent to the owner, not to customers, so no marketing consent is needed.
+ */
+export async function sendAdminAbandonedDigestEmail({ carts, unpaid }) {
+  const transporter = getTransporter();
+  if (!transporter) return;
+
+  const cartRows = carts.map(c =>
+    `<li>${escapeHtml(c.name || 'Customer')} (${escapeHtml(c.email)}${c.phone ? ', ' + escapeHtml(c.phone) : ''}) — ${c.item_count} item(s), ₹${money(c.cart_value)}</li>`
+  ).join('') || '<li>None</li>';
+
+  const unpaidRows = unpaid.map(o =>
+    `<li>Order #${o.id} — ${escapeHtml(o.name || 'Customer')} (${escapeHtml(o.email)}) — ₹${money(o.total_amount)} — started ${formatDate(o.created_at)}</li>`
+  ).join('') || '<li>None</li>';
+
+  await transporter.sendMail({
+    from: `"Mindfuels Orders" <${process.env.SMTP_USER}>`,
+    to: ADMIN_NOTIFY_EMAIL,
+    subject: `Mindfuels daily check: ${carts.length} cart(s) left, ${unpaid.length} unpaid checkout(s)`,
+    html: `
+      <div style="font-family:Arial,sans-serif;font-size:14px;color:#1e293b;line-height:1.6;">
+        <h2 style="color:#FF5A36;margin:0 0 8px;">Left-behind carts and unpaid checkouts</h2>
+        <p style="margin:0 0 16px;"><a href="${SITE_URL}/admin" style="color:#FF5A36;font-weight:bold;">Open Admin Panel →</a></p>
+        <p><strong>Carts left behind (2–24 hours ago):</strong></p>
+        <ul>${cartRows}</ul>
+        <p><strong>Checkouts not paid (last 24 hours):</strong></p>
+        <ul>${unpaidRows}</ul>
+      </div>
+    `
+  });
+  console.log(`[Email] ✅ Abandoned-checkout digest sent to ${ADMIN_NOTIFY_EMAIL}`);
 }

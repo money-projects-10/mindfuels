@@ -54,6 +54,36 @@ export const addAddress = async (req, res) => {
       await connection.query('UPDATE shipping_address SET is_default = 0 WHERE user_id = ?', [userId]);
     }
 
+    // Reuse an identical saved address instead of inserting a duplicate on every checkout
+    const [duplicates] = await connection.query(
+      `SELECT id FROM shipping_address
+       WHERE user_id = ? AND full_name = ? AND phone = ? AND address_line1 = ?
+         AND COALESCE(address_line2, '') = ? AND city = ? AND state = ? AND pincode = ?
+       ORDER BY id DESC LIMIT 1`,
+      [
+        userId,
+        full_name.trim(),
+        phone.trim(),
+        address_line1.trim(),
+        address_line2 ? address_line2.trim() : '',
+        city.trim(),
+        state.trim(),
+        pincode.trim()
+      ]
+    );
+    if (duplicates.length > 0) {
+      const existingId = duplicates[0].id;
+      if (makeDefault) {
+        await connection.query('UPDATE shipping_address SET is_default = 1 WHERE id = ?', [existingId]);
+      }
+      await connection.commit();
+      return res.status(200).json({
+        message: 'Address already saved',
+        addressId: existingId,
+        is_default: makeDefault
+      });
+    }
+
     const query = `
       INSERT INTO shipping_address (user_id, full_name, phone, address_line1, address_line2, city, state, pincode, is_default)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)

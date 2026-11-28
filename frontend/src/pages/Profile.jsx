@@ -388,7 +388,7 @@ export default function Profile({ navigate }) {
                             </div>
                           )}
                           <div style={{ color: 'var(--dark-light)', fontSize: '0.8rem' }}>
-                            Delivered by Mindfuels within 4–7 business days. Questions? WhatsApp +91 9899923670.
+                            Delivered by Mindfuels within 2–3 business days. Questions? WhatsApp +91 9899923670.
                           </div>
                         </>
                       );

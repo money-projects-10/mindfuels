@@ -17,6 +17,8 @@ const Cart = lazy(() => import('./pages/Cart.jsx'));
 const Profile = lazy(() => import('./pages/Profile.jsx'));
 const LegalPages = lazy(() => import('./pages/LegalPages.jsx'));
 const Admin = lazy(() => import('./pages/Admin.jsx'));
+const BookFinder = lazy(() => import('./pages/BookFinder.jsx'));
+const AdminBookFinderLeads = lazy(() => import('./pages/AdminBookFinderLeads.jsx'));
 
 const PageFallback = () => (
   <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0', minHeight: '60vh' }}>
@@ -31,6 +33,8 @@ import ShopByAge from './components/ShopByAge.jsx';
 import CategoryCarousel from './components/CategoryCarousel.jsx';
 import Testimonials from './components/Testimonials.jsx';
 import DelhiPublishingInfo from './components/DelhiPublishingInfo.jsx';
+import BookFinderBanner from './components/BookFinderBanner.jsx';
+import BookFinderBot from './components/BookFinderBot.jsx';
 
 import { updatePageSEO } from './utils/seo.js';
 import { initAnalytics, trackPageView } from './utils/analytics.js';
@@ -99,6 +103,15 @@ function MainApp() {
           title: 'Admin Dashboard | Mindfuels Publisher'
         });
         break;
+      case '/admin/leads':
+        updatePageSEO({
+          title: 'Book Finder Leads | Mindfuels Admin'
+        });
+        break;
+      case '/book-finder':
+      case '/book-finder/results':
+        // The Book Finder page sets its own title, description and canonical tag
+        break;
       case '/':
       default:
         updatePageSEO({
@@ -156,6 +169,11 @@ function MainApp() {
         return <LegalPages />;
       case '/admin':
         return <Admin navigate={navigate} />;
+      case '/admin/leads':
+        return <AdminBookFinderLeads navigate={navigate} />;
+      case '/book-finder':
+      case '/book-finder/results':
+        return <BookFinder navigate={navigate} onProductClick={handleOpenProductModal} />;
       case '/':
       default:
         return (
@@ -163,6 +181,7 @@ function MainApp() {
             <Hero navigate={navigate} />
             <TrustedFavorites onProductClick={handleOpenProductModal} />
             <ShopByAge navigate={navigate} />
+            <BookFinderBanner navigate={navigate} />
             <CategoryCarousel navigate={navigate} />
             <Testimonials />
             <DelhiPublishingInfo navigate={navigate} />
@@ -183,6 +202,8 @@ function MainApp() {
       </main>
 
       <Footer navigate={navigate} />
+
+      <BookFinderBot navigate={navigate} currentPath={currentPath} />
 
       <AnimatePresence>
         {activeProductId && (

@@ -60,7 +60,7 @@ export default function DelhiPublishingInfo({ navigate }) {
     },
     {
       q: "How fast is delivery to Delhi, Gurgaon, Noida, and NCR regions?",
-      a: "Orders placed on Mindfuels are processed and dispatched within 24 to 48 hours. Most customers in Delhi NCR receive their packages within 2 to 4 business days with complimentary free shipping and live SMS/email tracking."
+      a: "Orders placed on Mindfuels are processed and dispatched within 24 to 48 hours. Most customers in Delhi NCR receive their packages within 2 to 3 business days with complimentary free shipping and live SMS/email tracking."
     },
     {
       q: "Can preschools and educators in Delhi order books in bulk?",

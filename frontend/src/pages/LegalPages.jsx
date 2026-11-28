@@ -90,7 +90,7 @@ export default function LegalPages() {
           <ul style={{ paddingLeft: '20px', color: 'var(--dark-light)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <li>An order confirmation email with your receipt is sent as soon as your payment is received.</li>
             <li>Orders are processed and dispatched within 24–48 hours of order confirmation.</li>
-            <li>Estimated delivery times: 2–4 business days for Delhi NCR; 4–7 business days for other areas.</li>
+            <li>Estimated delivery times: 2–3 business days across India.</li>
             <li>You can check your order's delivery status anytime under My Orders in your profile, or WhatsApp us at +91 98999 23670.</li>
           </ul>
         </section>

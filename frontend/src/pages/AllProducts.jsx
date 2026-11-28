@@ -370,6 +370,12 @@ export default function AllProducts({ onProductClick, navigate }) {
                 ? 'No books found'
                 : <>Showing <strong>{rangeStart} to {rangeEnd}</strong> of <strong>{totalItems}</strong> {totalItems === 1 ? 'book' : 'books'}</>}
           </p>
+          <p style={{ margin: '6px 0 0', fontSize: '0.92rem' }}>
+            Not sure which book?{' '}
+            <a href="/book-finder" onClick={(e) => { e.preventDefault(); navigate('/book-finder'); }} style={{ color: '#FF5A36', fontWeight: 700 }}>
+              Try the Book Finder
+            </a>
+          </p>
         </div>
 
         {activeChips.length > 0 && (
